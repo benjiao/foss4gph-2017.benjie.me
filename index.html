@@ -1,49 +1,240 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+        <title>reveal.js</title>
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/black.css">
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section>
+                    <h2>Getting Started with Geospatial Queries in Elasticsearch</h2>
+                    <p>
+                        <small>by <a href="https://blog.benjie.me">Benjie Jiao</a> / <a href="http://twitter.com/BenjieJiao">@BenjieJiao</a></small>
+                    </p>
+                </section>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+                <section>
+                    <h3>PHL-Microsat Program</h3>
+                    <img src="images/diwata1.jpg"  height="400" >
+                </section>
 
-		<script>
-			// More info about config & dependencies:
-			// - https://github.com/hakimel/reveal.js#configuration
-			// - https://github.com/hakimel/reveal.js#dependencies
-			Reveal.initialize({
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
-				]
-			});
-		</script>
-	</body>
+                <section>
+                    <h2>The Distribution Site</h2>
+                    <p>
+                        <a href="https://data.phl-microsat.xyz">https://data.phl-microsat.xyz</a>
+                    </p>
+                </section>
+
+                <section>
+                    <h1>Elasticsearch</h1>
+                    <ul>
+                        <li class="fragment">Search and analytics engine</li>
+                        <li class="fragment">RESTful API based</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Dataset: Landsat8 Images</h3>
+                    <img src="images/image-browser.png"  height="400" >
+
+                </section>
+
+                <section>
+                    <pre><code class="json" data-trim style="font-size: 16px;">{
+    "scene_center": {
+        "lat": 8.673640241520552, 
+        "lon": 121.13240623401293
+    },
+    "footprint": {
+        "type": "Polygon", 
+        "coordinates": [[[120.47309, 9.72408], [122.167, 9.36347], [121.78675, 7.62076], [120.10088, 7.9841], [120.47309, 9.72408]]]
+    }, 
+    "scene_id": "LC81150542015162LGN00",
+    "capture_time": "2015-06-11T00:00:00"
+}
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Sample Request</h2>
+                    <pre><code class="bash" data-trim contenteditable style="font-size: 20px;">
+                    curl -XPOST 'http://localhost:9200/landsat8/scene/_count?pretty=true'
+                    </code></pre>
+
+                    <pre class="fragment"><code class="json" data-trim contenteditable style="font-size: 18px;">
+                        {
+                          "count" : 1650,
+                          "_shards" : {
+                            "total" : 5,
+                            "successful" : 5,
+                            "failed" : 0
+                          }
+                        }
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h1>Setting up</h1>
+                </section>
+
+                <section>
+                    <h2>Step 1. Define index</h2>
+                    <pre><code class="bash" data-trim style="font-size: 20px;">
+                    curl -XPUT 'http://localhost:9200/landsat8'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Step 2. Define mapping</h2>
+                    <pre><code class="bash" data-trim style="font-size: 20px;">
+                    curl -XPUT 'http://localhost:9200/landsat8/_mapping/scene' -d '{  
+                      "scene" : {
+                        "properties" : {
+                          "scene_center" : {
+                            "type": "geo_point"
+                          },
+                          "footprint" : {
+                            "type": "geo_shape"
+                          }
+                        }
+                      }
+                    }'
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Step 3. Load data</h2>
+                    <pre><code class="bash" data-trim style="font-size: 20px;">
+                    curl -XPOST 'http://localhost:9200/landsat8/scene' -d '{  
+                        "scene_center": {
+                            "lat": 8.673640241520552, 
+                            "lon": 121.13240623401293
+                        },
+                        "footprint": {
+                            "type": "Polygon", 
+                            "coordinates": [[[120.47309, 9.72408], [122.167, 9.36347], [121.78675, 7.62076], [120.10088, 7.9841], [120.47309, 9.72408]]]
+                        }, 
+                        "scene_id": "LC81150542015162LGN00",
+                        "capture_time": "2015-06-11T00:00:00"
+                    }'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h1>Geo Queries!</h1>
+                </section>
+
+                <section>
+                    <h3>Geo Distance</h3>
+
+                    <pre><code class="python" data-trim style="font-size: 18px;">
+                    curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d '{  
+                        "query": {
+                            "bool" : {
+                                "filter" : {
+                                    "geo_distance" : {
+                                        "distance" : "100km",
+                                        "scene_center" : {
+                                            "lat" : 14.5995,
+                                            "lon" : 120.9842
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Geo Shape</h3>
+
+                    <pre><code class="python" data-trim style="font-size: 16px;">
+                    curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d '{  
+                        "query": {
+                            "bool": {
+                                "filter": {
+                                    "geo_shape": {
+                                        "footprint": {
+                                            "shape": {
+                                                "type": "Polygon",
+                                                "coordinates": [
+                                                    [
+                                                        [120.59692382812499, 15.739388446649],
+                                                        [119.970703125,14.966013251567164],
+                                                        [120.38818359375, 14.019355706886051],
+                                                        [120.91552734375,14.583583455156525],
+                                                        [122.70629882812499,15.241789855961722],
+                                                        [120.59692382812499, 15.739388446649]
+                                                    ]
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Geohash Grids</h3>
+
+                    <pre><code class="python" data-trim style="font-size: 16px;">
+                    curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d  '{  
+                        "size": 0,
+                        "aggs": {
+                            "scene-grid": {
+                                "geohash_grid": {
+                                    "field": "scene_center",
+                                    "precision": 3
+                                }
+                            }
+                        }
+                    }'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <p>Slides: <a href="http://foss4gph2017.benjie.me">foss4gph2017.benjie.me</a></p>
+
+                    <p>
+                        <small><a href="https://blog.benjie.me">Benjie Jiao</a> / <a href="http://twitter.com/BenjieJiao">@BenjieJiao</a></small>
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+            Reveal.initialize({
+                dependencies: [
+                    { src: 'plugin/markdown/marked.js' },
+                    { src: 'plugin/markdown/markdown.js' },
+                    { src: 'plugin/notes/notes.js', async: true },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+                ]
+            });
+        </script>
+    </body>
 </html>
