@@ -1,27 +1,24 @@
 {
-  "name": "reveal.js",
-  "version": "3.5.0",
-  "main": [
-    "js/reveal.js",
-    "css/reveal.css"
-  ],
-  "homepage": "http://lab.hakim.se/reveal-js/",
-  "license": "MIT",
-  "description": "The HTML Presentation Framework",
+  "name": "foss4gph-examples",
+  "description": "",
+  "main": "",
   "authors": [
-    "Hakim El Hattab <hakim.elhattab@gmail.com>"
+    "Benjie Jiao <hi@benjie.me>"
   ],
-  "dependencies": {
-    "headjs": "~1.0.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/hakimel/reveal.js.git"
-  },
+  "license": "MIT",
+  "homepage": "",
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
-    "test"
-  ]
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "leaflet": "^1.0.3",
+    "jquery": "^3.2.1",
+    "leaflet-draw": "^0.4.9",
+    "geohash.js": "^1.0.1",
+    "semantic": "semantic-ui#^2.2.10"
+  }
 }

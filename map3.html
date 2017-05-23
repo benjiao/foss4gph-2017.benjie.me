@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Express</title>
+        <style>
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            html, body, #map {
+                height: 100%;
+                width: 100%;
+            }
+
+            .overlay {
+                position: absolute;
+                bottom: 3em;
+                left: 1em;
+                z-index: 314159;
+            }
+
+        </style>
+        <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css">
+        <link rel="stylesheet" href="bower_components/leaflet-draw/dist/leaflet.draw.css">
+    </head>
+
+    <body>
+        <div id="map"></div>
+        <div class="overlay">
+            <div>
+                Precision: <select id="precision-select">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected="selected" >3</option>
+                </select>
+            </div>
+        </div>
+    </body>
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/leaflet/dist/leaflet.js"></script>
+    <script src="bower_components/leaflet-draw/dist/leaflet.draw.js"></script>
+    <script src="bower_components/geohash.js/geohash.js"></script>
+
+    <script type="text/javascript">
+        var base32 = '0123456789bcdefghjkmnpqrstuvwxyz';
+        var geohash_bounds = function(geohash) {
+            var is_even = true;
+            var min_lat =  -90, max_lat =  90;
+            var min_lon = -180, max_lon = 180;
+
+            for (var i=0; i<geohash.length; i++) {
+                var chr = geohash.charAt(i);
+                var idx = base32.indexOf(chr);
+
+                for (var n=4; n>=0; n--) {
+                    var bitN = idx >> n & 1;
+                    if (is_even) {
+                        var middle_lon = (min_lon + max_lon) / 2;
+                        if (bitN == 1) {
+                            min_lon = middle_lon;
+                        } else {
+                            max_lon = middle_lon;
+                        }
+                    } else {
+                        var middle_lat = (min_lat + max_lat) / 2;
+                        if (bitN == 1) {
+                            min_lat = middle_lat;
+                        } else {
+                            max_lat = middle_lat;
+                        }
+                    }
+                    is_even = !is_even;
+                }
+            }
+            return [
+                [min_lat, min_lon],
+                [max_lat, max_lon]
+            ];
+        };
+
+        $(function(){
+            initialize_map();
+            fetch_grid(3);
+
+            $('#precision-select').on('change', function(e) {
+                fetch_grid($('#precision-select').val());
+            })
+        })
+
+        var initialize_map = function(){
+            window.main_map = L.map('map').setView([12.5, 121], 6);
+            L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(window.main_map);
+
+            var attr_text = '<a href="http://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a> | <a href="https://carto.com/attributions">&copy; CARTO</a>';
+            var attr = L.control.attribution({position:"topright"});
+            attr.addAttribution(attr_text);
+            attr.setPrefix("");
+            attr.addTo(window.main_map);
+
+        }
+
+        var fetch_grid = function(precision){
+
+            var query_params = {  
+                "size": 0,
+                "aggs": {
+                    "scene-grid": {
+                        "geohash_grid": {
+                            "field": "scene_center",
+                            "precision": precision
+                        }
+                    }
+                }
+            }
+
+            $.post("http://es.dev.benjie.me/landsat8/scene/_search?pretty=true", JSON.stringify(query_params), function(data){
+
+                // console.log(data.aggregations['scene-grid']['buckets']);
+                var buckets = data.aggregations['scene-grid']['buckets']
+                var rectangles = []
+                for (var i=0; i < buckets.length; i++){
+                    console.log(buckets[i].doc_count);
+                    var rectangle = L.rectangle(geohash_bounds(buckets[i].key), {
+                        color: 'red',
+                        fillOpacity: 0.1,
+                        radius: 50000
+                    });
+
+                    var countLabel = L.divIcon({
+                        className: 'count-label',
+                        html: String(buckets[i].doc_count)
+                    });
+
+                    rectangles.push(rectangle);
+
+                    // Markeer object to attach the created label
+                    var marker =  L.marker(rectangle.getBounds().getCenter(), {
+                        icon: countLabel
+                    });
+
+                    rectangles.push(marker);
+                }
+
+                // // Add grids to map
+                if (window.grids != undefined) window.main_map.removeLayer(window.grids);
+                window.grids = L.featureGroup(rectangles).addTo(window.main_map);
+            })
+
+        }
+
+        var set_marker_filter = function(point){
+            var radius = 100;
+            window.drawn_filter = L.circle(point, {
+                color: 'red',
+                fillOpacity: 0.1,
+                radius: radius * 2 * 1000
+            }).addTo(window.main_map);
+
+            window.main_map.flyTo(point, 8);
+            geo_distance_filter(point, radius)
+        }
+
+        var set_polygon_filter = function(coordinates){
+            window.drawn_filter = L.polygon(coordinates, {
+                color: 'red',
+                fillOpacity: 0.1,
+            }).addTo(window.main_map);
+
+            var coordinate_list = []
+            for (i=0; i < coordinates.length; i++) {
+                coordinate_list.push([coordinates[i].lng, coordinates[i].lat])
+            }
+
+            coordinate_list.push([coordinates[0].lng, coordinates[0].lat])
+            geo_shape_filter(coordinate_list)
+        }
+
+        var clear_drawn_filters = function(){
+            try {
+                window.main_map.removeLayer(window.drawn_filter);
+            } catch(err) {
+                console.log("Error when trying to clear drawn items: " + err);
+            }
+
+            try {
+                window.main_map.removeLayer(window.drawn_results);
+            } catch(err) {
+                console.log("Error when trying to clear drawn results: " + err);
+            }
+
+        }
+
+        var geo_distance_filter = function(point, radius){
+            console.log(point)
+            var query_params = {
+                "size": 200,
+                "query": {
+                    "bool" : {
+                        "filter" : {
+                            "geo_distance" : {
+                                "distance" : "100km",
+                                "scene_center" : {
+                                    "lat" : point.lat,
+                                    "lon" : point.lng
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            $.post("http://es.dev.benjie.me/landsat8/scene/_search?pretty=true", JSON.stringify(query_params), function(data){
+                var items = data.hits.hits;
+                console.log(items)
+
+                var results = []
+                for (i=0; i < items.length; i++) {
+                    console.log(items[i]._source);
+                    results.push(items[i]._source)
+                }
+
+                draw_results(results);
+            })
+        }
+
+        var geo_shape_filter = function(shape){
+            var query_params = {
+                "size": 100,
+                "query": {
+                    "bool": {
+                        "filter": {
+                            "geo_shape": {
+                                "footprint": {
+                                    "shape": {
+                                        "type": "Polygon",
+                                        "coordinates": [shape]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            console.log(JSON.stringify(query_params));
+
+            $.post("http://es.dev.benjie.me/landsat8/scene/_search?pretty=true", JSON.stringify(query_params), function(data){
+                var items = data.hits.hits;
+                console.log(items)
+
+                var results = []
+                for (i=0; i < items.length; i++) {
+                    console.log(items[i]._source);
+                    results.push(items[i]._source)
+                }
+
+                draw_results(results);
+            })
+        }
+    </script>
+</html>

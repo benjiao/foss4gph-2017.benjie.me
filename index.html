@@ -32,7 +32,8 @@
                 </section>
 
                 <section data-background='images/diwata1.jpg'>
-                    <h3>PHL-Microsat Program</h3>
+                    <h1>PHL-Microsat Program</h1>
+                    <h3>Data Processing, Archiving, and Distribution Team</h3>
                 </section>
 
                 <section data-background='images/distribution-site.png'>
@@ -45,92 +46,379 @@
                 </section>
 
                 <section>
-                    <h1>Elasticsearch?</h1>
+                    <h1>Elasticsearch</h1>
                     <p>
                         <span class="fragment">RESTful API based</span><span class="fragment">, Distributed</span><span class="fragment">, Open Source</span><span class="fragment">, Search and analytics engine</span>
-                        
+                    </p>
                 </section>
 
                 <section>
-                    <h1>Typical ES Setup</h1>
-                </section>
-
-                <section>
-                    <h2>Sample Request</h2>
+                    <h2>Example #1 - Count</h2>
                     <pre><code class="bash" data-trim contenteditable style="font-size: 20px;">
+                    # Request:
                     curl -XPOST 'http://localhost:9200/landsat8/scene/_count?pretty=true'
-                    </code></pre>
 
-                    <pre class="fragment"><code class="json" data-trim contenteditable style="font-size: 18px;">
-                        {
-                          "count" : 1650,
-                          "_shards" : {
-                            "total" : 5,
-                            "successful" : 5,
-                            "failed" : 0
+                    # Response:
+                    {
+                      "count" : 1650,
+                      "_shards" : {
+                        "total" : 5,
+                        "successful" : 5,
+                        "failed" : 0
+                      }
+                    }
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Example #2 - Filters</h2>
+                    <pre><code class="bash" data-trim contenteditable style="font-size: 18px;">
+                    # Request:
+                    curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d '{
+                        "query": {
+                            "bool" : {
+                                "filter" : {
+                                    "range": {
+                                        "capture_time": {
+                                            "gte": "2015-07-01T00:00:00Z",
+                                            "lte": "2015-08-01T00:00:00Z"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Example #2 - Filters</h2>
+                    <pre><code class="bash" data-trim contenteditable style="font-size: 16px;">
+                    # Response:
+                    {
+                      "hits" : {
+                        "total" : 126,
+                        "hits" : [ {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81150502015194LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81150502015194LGN00",
+                            "scene_center" : {
+                              "lat" : 14.453553772919806,
+                              "lon" : 122.39464818838258
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 121.7219, 15.5043 ], [ 123.45305, 15.14088 ], [ 123.05921, 13.3997 ], [ 121.34184, 13.76542 ], [ 121.7219, 15.5043 ] ] ]
+                            },
+                            "capture_time" : "2015-07-13T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81150492015194LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81150492015194LGN00",
+                            "scene_center" : {
+                              "lat" : 15.897728420549656,
+                              "lon" : 122.71733833069321
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 122.04012, 16.94861 ], [ 123.78376, 16.58418 ], [ 123.38552, 14.84358 ], [ 121.65718, 15.21018 ], [ 122.04012, 16.94861 ] ] ]
+                            },
+                            "capture_time" : "2015-07-13T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81170572015192LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81170572015192LGN00",
+                            "scene_center" : {
+                              "lat" : 4.336072792607698,
+                              "lon" : 117.10874332003002
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 116.45494, 5.3865 ], [ 118.1336, 5.0269 ], [ 117.75984, 3.28373 ], [ 116.08518, 3.6463 ], [ 116.45494, 5.3865 ] ] ]
+                            },
+                            "capture_time" : "2015-07-11T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81130542015212LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81130542015212LGN00",
+                            "scene_center" : {
+                              "lat" : 8.674056094991405,
+                              "lon" : 124.23403967823751
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 123.57478, 9.72451 ], [ 125.26851, 9.364 ], [ 124.88833, 7.62117 ], [ 123.20264, 7.98439 ], [ 123.57478, 9.72451 ] ] ]
+                            },
+                            "capture_time" : "2015-07-31T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81160482015201LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81160482015201LGN00",
+                            "scene_center" : {
+                              "lat" : 17.340762400970817,
+                              "lon" : 121.50093662018865
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 120.81891, 18.3918 ], [ 122.57608, 18.02635 ], [ 122.17304, 16.28629 ], [ 120.43275, 16.65379 ], [ 120.81891, 18.3918 ] ] ]
+                            },
+                            "capture_time" : "2015-07-20T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81130542015196LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81130542015196LGN00",
+                            "scene_center" : {
+                              "lat" : 8.673775942044355,
+                              "lon" : 124.21975974811737
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 123.56042, 9.72422 ], [ 125.25435, 9.36362 ], [ 124.87413, 7.6209 ], [ 123.18824, 7.98421 ], [ 123.56042, 9.72422 ] ] ]
+                            },
+                            "capture_time" : "2015-07-15T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81120562015189LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81120562015189LGN00",
+                            "scene_center" : {
+                              "lat" : 5.782368345593861,
+                              "lon" : 125.14482527147206
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 124.48962, 6.83277 ], [ 126.17214, 6.47296 ], [ 125.79659, 4.72988 ], [ 124.11938, 5.09258 ], [ 124.48962, 6.83277 ] ] ]
+                            },
+                            "capture_time" : "2015-07-08T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81120532015189LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81120532015189LGN00",
+                            "scene_center" : {
+                              "lat" : 10.11944064234885,
+                              "lon" : 126.0796638215363
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 125.41752, 11.16992 ], [ 127.11909, 10.80877 ], [ 126.73607, 9.06636 ], [ 125.04391, 9.43013 ], [ 125.41752, 11.16992 ] ] ]
+                            },
+                            "capture_time" : "2015-07-08T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81140532015203LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81140532015203LGN00",
+                            "scene_center" : {
+                              "lat" : 10.119203785202235,
+                              "lon" : 122.99207232351144
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 122.33004, 11.16969 ], [ 124.03135, 10.80864 ], [ 123.64836, 9.06611 ], [ 121.95647, 9.42979 ], [ 122.33004, 11.16969 ] ] ]
+                            },
+                            "capture_time" : "2015-07-22T00:00:00"
+                          }
+                        }, {
+                          "_index" : "landsat8",
+                          "_type" : "scene",
+                          "_id" : "LC81150532015210LGN00",
+                          "_score" : 0.0,
+                          "_source" : {
+                            "scene_id" : "LC81150532015210LGN00",
+                            "scene_center" : {
+                              "lat" : 10.119367495647607,
+                              "lon" : 121.4542494257279
+                            },
+                            "footprint" : {
+                              "type" : "Polygon",
+                              "coordinates" : [ [ [ 120.79234, 11.16985 ], [ 122.49344, 10.80881 ], [ 122.11041, 9.06628 ], [ 120.41874, 9.42994 ], [ 120.79234, 11.16985 ] ] ]
+                            },
+                            "capture_time" : "2015-07-29T00:00:00"
+                          }
+                        } ],
+                        "max_score" : 0.0
+                      },
+                      "took" : 7,
+                      "timed_out" : false,
+                      "_shards" : {
+                        "total" : 5,
+                        "successful" : 5,
+                        "failed" : 0
+                      }
+                    }
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Example #3 - Aggregations</h2>
+                    <pre><code class="bash" data-trim contenteditable style="font-size: 18px;">
+                    # Request:
+                    curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d '{
+                        "aggs" : {
+                          "scenes_per_month" : {
+                              "date_histogram" : {
+                                  "field" : "capture_time",
+                                  "interval" : "month"
+                              }
                           }
                         }
+                        "size": 0,
+                    }'
                     </code></pre>
                 </section>
 
                 <section>
+                    <h2>Example #3 - Aggregations</h2>
+                    <pre><code class="bash" data-trim contenteditable style="font-size: 18px;">
+                    # Results
+                    {
+                      "aggregations" : {
+                        "scenes_per_month" : {
+                          "buckets" : [ {
+                            "key_as_string" : "2014-12-01T00:00:00.000Z",
+                            "key" : 1417392000000,
+                            "doc_count" : 44
+                          }, {
+                            "key_as_string" : "2015-01-01T00:00:00.000Z",
+                            "key" : 1420070400000,
+                            "doc_count" : 117
+                          }, {
+                            "key_as_string" : "2015-02-01T00:00:00.000Z",
+                            "key" : 1422748800000,
+                            "doc_count" : 123
+                          }, {
+                            "key_as_string" : "2015-03-01T00:00:00.000Z",
+                            "key" : 1425168000000,
+                            "doc_count" : 123
+                          }, {
+                            "key_as_string" : "2015-04-01T00:00:00.000Z",
+                            "key" : 1427846400000,
+                            "doc_count" : 118
+                          }, {
+                            "key_as_string" : "2015-05-01T00:00:00.000Z",
+                            "key" : 1430438400000,
+                            "doc_count" : 128
+                          }, {
+                            "key_as_string" : "2015-06-01T00:00:00.000Z",
+                            "key" : 1433116800000,
+                            "doc_count" : 118
+                          }, {
+                            "key_as_string" : "2015-07-01T00:00:00.000Z",
+                            "key" : 1435708800000,
+                            "doc_count" : 126
+                          }, {
+                            "key_as_string" : "2015-08-01T00:00:00.000Z",
+                            "key" : 1438387200000,
+                            "doc_count" : 122
+                          }, {
+                            "key_as_string" : "2015-09-01T00:00:00.000Z",
+                            "key" : 1441065600000,
+                            "doc_count" : 122
+                          }, {
+                            "key_as_string" : "2015-10-01T00:00:00.000Z",
+                            "key" : 1443657600000,
+                            "doc_count" : 130
+                          }, {
+                            "key_as_string" : "2015-11-01T00:00:00.000Z",
+                            "key" : 1446336000000,
+                            "doc_count" : 120
+                          }, {
+                            "key_as_string" : "2015-12-01T00:00:00.000Z",
+                            "key" : 1448928000000,
+                            "doc_count" : 128
+                          }, {
+                            "key_as_string" : "2016-01-01T00:00:00.000Z",
+                            "key" : 1451606400000,
+                            "doc_count" : 124
+                          }, {
+                            "key_as_string" : "2016-02-01T00:00:00.000Z",
+                            "key" : 1454284800000,
+                            "doc_count" : 7
+                          } ]
+                        }
+                      },
+                      "hits" : {
+                        "total" : 1650,
+                        "max_score" : 0.0,
+                        "hits" : [ ]
+                      },
+                      "took" : 1,
+                      "timed_out" : false,
+                      "_shards" : {
+                        "total" : 5,
+                        "successful" : 5,
+                        "failed" : 0
+                      }
+                    }
+                    </code></pre>
+                </section>
+
+                <section data-background='images/earth.jpg'>
                     <h1>For Geo?</h1>
                 </section>
 
                 <section>
-                    <h1>Setting up</h1>
+                  <h2> Landsat 8 Data </h2>
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>scene_id</td>
+                        <td>"LC81150542015162LGN00"</td>
+                      </tr>
+                      <tr>
+                        <td>capture_time</td>
+                        <td>"2015-06-11T00:00:00"</td>
+                      </tr>
+                      <tr>
+                        <td>scene_center</td>
+                        <td>Coordinates of image's center</td>
+                      </tr>
+                      <tr>
+                        <td>footprint</td>
+                        <td>GeoJSON Polygon of the image footprint</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
                 </section>
 
                 <section>
-                    <h2>Step 1. Define index</h2>
-                    <pre><code class="bash" data-trim style="font-size: 20px;">
-                    curl -XPUT 'http://localhost:9200/landsat8'
-                    </code></pre>
-                </section>
+                    <h3>Geo Distance Filter</h3>
 
-                <section>
-                    <h2>Step 2. Define mapping</h2>
-                    <pre><code class="bash" data-trim style="font-size: 20px;">
-                    curl -XPUT 'http://localhost:9200/landsat8/_mapping/scene' -d '{  
-                      "scene" : {
-                        "properties" : {
-                          "scene_center" : {
-                            "type": "geo_point"
-                          },
-                          "footprint" : {
-                            "type": "geo_shape"
-                          }
-                        }
-                      }
-                    }'
-                    </code></pre>
-                </section>
-                <section>
-                    <h2>Step 3. Load data</h2>
-                    <pre><code class="bash" data-trim style="font-size: 20px;">
-                    curl -XPOST 'http://localhost:9200/landsat8/scene' -d '{  
-                        "scene_center": {
-                            "lat": 8.673640241520552, 
-                            "lon": 121.13240623401293
-                        },
-                        "footprint": {
-                            "type": "Polygon", 
-                            "coordinates": [[[120.47309, 9.72408], [122.167, 9.36347], [121.78675, 7.62076], [120.10088, 7.9841], [120.47309, 9.72408]]]
-                        }, 
-                        "scene_id": "LC81150542015162LGN00",
-                        "capture_time": "2015-06-11T00:00:00"
-                    }'
-                    </code></pre>
-                </section>
-
-                <section>
-                    <h1>Geo Queries!</h1>
-                </section>
-
-                <section>
-                    <h3>Geo Distance</h3>
-
-                    <pre><code class="python" data-trim style="font-size: 18px;">
+                    <pre><code class="bash" data-trim style="font-size: 18px;">
                     curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d '{  
                         "query": {
                             "bool" : {
@@ -149,10 +437,13 @@
                     </code></pre>
                 </section>
 
-                <section>
-                    <h3>Geo Shape</h3>
+                <section data-background-iframe="map1.html" data-background-interactive>
+                </section>
 
-                    <pre><code class="python" data-trim style="font-size: 16px;">
+                <section>
+                    <h3>Geo Shape Filter</h3>
+
+                    <pre><code class="bash" data-trim style="font-size: 16px;">
                     curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d '{  
                         "query": {
                             "bool": {
@@ -181,8 +472,11 @@
                     </code></pre>
                 </section>
 
+                <section data-background-iframe="map2.html" data-background-interactive>
+                </section>
+
                 <section>
-                    <h3>Geohash Grids</h3>
+                    <h3>Geohash Grid Aggregation</h3>
 
                     <pre><code class="python" data-trim style="font-size: 16px;">
                     curl -XPOST 'http://localhost:9200/landsat8/scene/_search?pretty=true' -d  '{  
@@ -199,11 +493,61 @@
                     </code></pre>
                 </section>
 
-                <section>
-                    <p>Slides: <a href="http://foss4gph2017.benjie.me">foss4gph2017.benjie.me</a></p>
+                <section data-background-iframe="map3.html" data-background-interactive>
+                </section>
 
+                <section>
+                  <h1>How do I enable the Geo stuff?</h1>
+                </section>
+
+                <section>
+                    <h2>Step 1. Define index</h2>
+                    <pre><code class="bash" data-trim style="font-size: 20px;">
+                    curl -XPUT 'http://localhost:9200/landsat8'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Step 2. Define mapping</h2>
+                    <pre><code class="bash" data-trim style="font-size: 20px;">
+                    curl -XPUT 'http://localhost:9200/landsat8/_mapping/scene' -d '{  
+                      "scene" : {
+                        "properties" : {
+                          "scene_center" : {
+                            "type": "geo_point"
+                          },
+                          "footprint" : {
+                            "type": "geo_shape"
+                          }
+                        }
+                      }
+                    }'
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Step 3. Load data</h2>
+                    <pre><code class="bash" data-trim style="font-size: 20px;">
+                    curl -XPOST 'http://localhost:9200/landsat8/scene' -d '{  
+                        "scene_center": {
+                            "lat": 8.673640241520552, 
+                            "lon": 121.13240623401293
+                        },
+                        "footprint": {
+                            "type": "Polygon", 
+                            "coordinates": [[[120.47309, 9.72408], [122.167, 9.36347], [121.78675, 7.62076], [120.10088, 7.9841], [120.47309, 9.72408]]]
+                        }, 
+                        "scene_id": "LC81150542015162LGN00",
+                        "capture_time": "2015-06-11T00:00:00"
+                    }'
+                    </code></pre>
+                </section>
+                <section>
+                    <h2><a href="http://foss4gph2017.benjie.me">foss4gph2017.benjie.me</a></h2>
+                    <small><a href="https://blog.benjie.me/geospatial-queries-for-elasticsearch/" target="_blank">https://blog.benjie.me/geospatial-queries-for-elasticsearch</a></small>
+                    <small><a href="https://github.com/benjiao/elasticsearch-geo-examples" target="_blank">https://github.com/benjiao/elasticsearch-geo-examples</a></small>
                     <p>
-                        <small><a href="https://blog.benjie.me">Benjie Jiao</a> / <a href="http://twitter.com/BenjieJiao">@BenjieJiao</a></small>
+                        <small><a target="_blank" href="https://blog.benjie.me">Benjie Jiao</a> / <a target="_blank" href="http://twitter.com/BenjieJiao">@BenjieJiao</a></small>
                     </p>
                 </section>
             </div>
@@ -221,6 +565,7 @@
                     { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
                 ]
             });
+
         </script>
     </body>
 </html>
